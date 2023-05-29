@@ -1,0 +1,24 @@
+{
+  "name": "@apimda/db-utils-test",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "dist/index.js",
+  "files": [
+    "/dist",
+    "!/**/*.map",
+    "!/**/*.test.*"
+  ],
+  "dependencies": {
+    "@apimda/db-utils-core": "workspace:*",
+    "testcontainers": "^9.8.0",
+    "vitest": "^0.31.0"
+  },
+  "peerDependencies": {
+    "postgres": "^3.3.4"
+  },
+  "peerDependenciesMeta": {
+    "postgres": {
+      "optional": true
+    }
+  }
+}

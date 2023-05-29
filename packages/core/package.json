@@ -1,0 +1,34 @@
+{
+  "name": "@apimda/db-utils-core",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "dist/index.js",
+  "files": [
+    "/dist",
+    "!/**/*.map",
+    "!/**/*.test.*"
+  ],
+  "dependencies": {
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.115",
+    "vitest": "^0.31.0"
+  },
+  "peerDependencies": {
+    "postgres": "^3.3.4",
+    "zod": "^3.21.4"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    },
+    "postgres": {
+      "optional": true
+    }
+  },
+  "keywords": [
+    "postgresjs",
+    "zod",
+    "dao"
+  ]
+}
