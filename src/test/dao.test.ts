@@ -2,9 +2,37 @@ import { Sql } from 'postgres';
 import { afterAll, beforeAll, beforeEach, describe, test } from 'vitest';
 import { BasePostgresJsDao } from '../dao.js';
 import { DbType, auto, createdAt, id, mapping, updatedAt } from '../mapping.js';
+import { SchemaManager } from '../schema-manager.js';
 import { mapperDefaults } from '../utils.js';
 import { daoTest } from './dao-test-utils.js';
 import { DbTestContext } from './db-test-context.js';
+
+class TestSchemaManager implements SchemaManager {
+  async initializeDatabase(sql: Sql): Promise<void> {
+    await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+  }
+  async createSchema(sql: Sql, schemaName: string): Promise<void> {
+    await context.sql`CREATE SCHEMA ${sql(schemaName)}`;
+    await context.sql`CREATE TABLE test_obj 
+    (
+      obj_id              uuid          DEFAULT uuid_generate_v4()  NOT NULL,
+      obj_name            varchar(100),
+      is_admin            boolean,
+      my_comp_nested_one  int                                       NOT NULL,
+      my_comp_nested_two  int                                       NOT NULL, 
+      money_amount        bigint                                    NOT NULL,
+      money_currency      text                                      NOT NULL, 
+      sql_test            text,
+      created             timestamptz   DEFAULT NOW()               NOT NULL,
+      updated             timestamptz   DEFAULT NOW()               NOT NULL,
+      
+      PRIMARY KEY (obj_id)
+    )`;
+  }
+  async dropSchema(sql: Sql, schemaName: string): Promise<void> {
+    await sql`DROP SCHEMA IF EXISTS ${sql(schemaName)} CASCADE`;
+  }
+}
 
 class Money {
   constructor(public amount: bigint, public currency: string) {}
@@ -64,27 +92,12 @@ let context: DbTestContext;
 let dao: TestObjDao;
 
 beforeAll(async () => {
-  context = await DbTestContext.create();
-  await context.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+  context = await DbTestContext.create(new TestSchemaManager());
   dao = new TestObjDao(context.sql);
 });
 
 beforeEach(async () => {
   await context.recreateTestSchema();
-  await context.sql`CREATE TABLE test_obj 
-  (
-    obj_id      uuid          DEFAULT uuid_generate_v4()  NOT NULL,
-    obj_name    varchar(100),
-    is_admin    boolean,
-    my_comp_nested_one int NOT NULL,
-    my_comp_nested_two int NOT NULL, 
-    money_amount bigint NOT NULL,
-    money_currency text NOT NULL, 
-    sql_test text,
-    created     timestamptz   DEFAULT NOW()               NOT NULL,
-    updated     timestamptz   DEFAULT NOW()               NOT NULL,
-    PRIMARY KEY (obj_id)
-  )`;
 });
 
 afterAll(async () => {
