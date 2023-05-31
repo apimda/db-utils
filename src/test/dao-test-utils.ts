@@ -1,6 +1,14 @@
-import { expect } from 'vitest';
+import assert from 'node:assert/strict';
 import { BasePostgresJsDao, PostgresJsId } from '../dao.js';
 import { sortByProperty } from '../utils.js';
+
+const removeUndefinedValues = (obj: any) => {
+  return Object.fromEntries(Object.entries(obj).flatMap(([k, v]) => (v === undefined ? [] : [[k, v]])));
+};
+
+const assertEqualIgnoreUndefined = (one: any, two: any) => {
+  assert.deepStrictEqual(removeUndefinedValues(one), removeUndefinedValues(two));
+};
 
 export async function daoTest<TEntity, TId extends PostgresJsId>(
   dao: BasePostgresJsDao<TEntity, TId>,
@@ -22,26 +30,26 @@ export async function daoTest<TEntity, TId extends PostgresJsId>(
   const entity = createFn();
   const inserted = await dao.insert(entity);
   const id = inserted[idProp] as TId;
-  expect(applyIdAndTimestamps(entity, inserted)).toEqual(await dao.findById(id));
-  expect(await dao.existsById(id)).toBe(true);
-  expect(await dao.count()).toBe(1);
+  assertEqualIgnoreUndefined(applyIdAndTimestamps(entity, inserted), await dao.findById(id));
+  assert.strictEqual(await dao.existsById(id), true);
+  assert.strictEqual(await dao.count(), 1);
 
   const updated = await dao.update(updateFn(inserted));
-  expect(updated).toEqual(await dao.findById(id));
+  assertEqualIgnoreUndefined(updated, await dao.findById(id));
 
   await dao.deleteById(id);
-  expect(await dao.findById(id!)).toBeUndefined();
-  expect(await dao.existsById(id)).toBe(false);
-  expect(await dao.count()).toBe(0);
+  assert.strictEqual(await dao.findById(id!), undefined);
+  assert.strictEqual(await dao.existsById(id), false);
+  assert.strictEqual(await dao.count(), 0);
 
   // Upsert
   const upsInserted = await dao.upsert(createFn());
   const upsId = upsInserted[idProp] as TId;
-  expect(upsInserted).toEqual(await dao.findById(upsId));
+  assertEqualIgnoreUndefined(upsInserted, await dao.findById(upsId));
   const upsUpdated = await dao.upsert(updateFn(upsInserted));
-  expect(upsUpdated).toEqual(await dao.findById(upsId));
+  assertEqualIgnoreUndefined(upsUpdated, await dao.findById(upsId));
   await dao.deleteById(upsId);
-  expect(await dao.count()).toBe(0);
+  assert.strictEqual(await dao.count(), 0);
 
   // Batch
   const batchNum = 4;
@@ -52,26 +60,25 @@ export async function daoTest<TEntity, TId extends PostgresJsId>(
 
   const insertedArr = await dao.insertMany(entityArr);
   for (const [idx, obj] of insertedArr.entries()) {
-    const id = obj[idProp] as TId;
-    expect(id).toBeDefined();
-    expect(applyIdAndTimestamps(entityArr[idx], obj)).toEqual(obj);
+    assert(obj[idProp] !== undefined);
+    assertEqualIgnoreUndefined(applyIdAndTimestamps(entityArr[idx], obj), obj);
   }
-  expect(await dao.count()).toBe(batchNum);
+  assert.strictEqual(await dao.count(), batchNum);
 
   // const updatedArr = await dao.updateMany(entityArr.map(updateFn));
   // TODO support updateMany
   const foundAllArr = await dao.findAll();
-  expect(foundAllArr).toHaveLength(batchNum);
+  assert.strictEqual(foundAllArr.length, batchNum);
   for (const [idx, obj] of foundAllArr.entries()) {
     // expect(updatedArr[idx]).toEqual(obj);
-    expect(insertedArr[idx]).toEqual(obj);
+    assertEqualIgnoreUndefined(insertedArr[idx], obj);
   }
 
   const idArr = foundAllArr.slice(batchNum / 2).map(e => e[idProp] as TId);
   const findManyByIdArr = await dao.findManyById(idArr);
-  expect(idArr.length).toBe(findManyByIdArr.length);
+  assert.strictEqual(idArr.length, findManyByIdArr.length);
   for (const [idx, obj] of findManyByIdArr.entries()) {
-    expect(foundAllArr[batchNum / 2 + idx]).toEqual(obj);
+    assertEqualIgnoreUndefined(foundAllArr[batchNum / 2 + idx], obj);
   }
 
   // Pages
@@ -82,9 +89,9 @@ export async function daoTest<TEntity, TId extends PostgresJsId>(
     sortColumn: dao.mapping.idColumnName,
     sortOrder: 'asc'
   });
-  expect(firstPageAsc.count).toBe(batchNum);
-  expect(firstPageAsc.results.length).toBe(batchNum / 2);
-  expect(firstPageAsc.results).toEqual(allByIdAsc.slice(0, batchNum / 2));
+  assert.strictEqual(firstPageAsc.count, batchNum);
+  assert.strictEqual(firstPageAsc.results.length, batchNum / 2);
+  assertEqualIgnoreUndefined(firstPageAsc.results, allByIdAsc.slice(0, batchNum / 2));
 
   const secondPageAsc = await dao.findPage({
     limit: batchNum / 2,
@@ -92,9 +99,9 @@ export async function daoTest<TEntity, TId extends PostgresJsId>(
     sortColumn: dao.mapping.idColumnName,
     sortOrder: 'asc'
   });
-  expect(firstPageAsc.count).toBe(batchNum);
-  expect(firstPageAsc.results.length).toBe(batchNum / 2);
-  expect(secondPageAsc.results).toEqual(allByIdAsc.slice(batchNum / 2));
+  assert.strictEqual(firstPageAsc.count, batchNum);
+  assert.strictEqual(firstPageAsc.results.length, batchNum / 2);
+  assertEqualIgnoreUndefined(secondPageAsc.results, allByIdAsc.slice(batchNum / 2));
 
   const fullPageDesc = await dao.findPage({
     limit: batchNum,
@@ -102,7 +109,7 @@ export async function daoTest<TEntity, TId extends PostgresJsId>(
     sortColumn: dao.mapping.idColumnName,
     sortOrder: 'desc'
   });
-  expect(fullPageDesc.count).toBe(batchNum);
-  expect(fullPageDesc.results.length).toBe(batchNum);
-  expect(fullPageDesc.results).toEqual(allByIdAsc.reverse());
+  assert.strictEqual(fullPageDesc.count, batchNum);
+  assert.strictEqual(fullPageDesc.results.length, batchNum);
+  assertEqualIgnoreUndefined(fullPageDesc.results, allByIdAsc.reverse());
 }
