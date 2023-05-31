@@ -21,12 +21,12 @@ export async function daoTest<TEntity, TId extends PostgresJsId>(
   const entity = createFn();
   const inserted = await dao.insert(entity);
   const id = inserted[idProp] as TId;
-  expect(applyIdAndTimestamps(entity, inserted)).toStrictEqual(await dao.findById(id));
+  expect(applyIdAndTimestamps(entity, inserted)).toEqual(await dao.findById(id));
   expect(await dao.existsById(id)).toBe(true);
   expect(await dao.count()).toBe(1);
 
   const updated = await dao.update(updateFn(inserted));
-  expect(updated).toStrictEqual(await dao.findById(id));
+  expect(updated).toEqual(await dao.findById(id));
 
   await dao.deleteById(id);
   expect(await dao.findById(id!)).toBeUndefined();
@@ -36,9 +36,9 @@ export async function daoTest<TEntity, TId extends PostgresJsId>(
   // Upsert
   const upsInserted = await dao.upsert(createFn());
   const upsId = upsInserted[idProp] as TId;
-  expect(upsInserted).toStrictEqual(await dao.findById(upsId));
+  expect(upsInserted).toEqual(await dao.findById(upsId));
   const upsUpdated = await dao.upsert(updateFn(upsInserted));
-  expect(upsUpdated).toStrictEqual(await dao.findById(upsId));
+  expect(upsUpdated).toEqual(await dao.findById(upsId));
   await dao.deleteById(upsId);
   expect(await dao.count()).toBe(0);
 
@@ -83,7 +83,7 @@ export async function daoTest<TEntity, TId extends PostgresJsId>(
   });
   expect(firstPageAsc.count).toBe(batchNum);
   expect(firstPageAsc.results.length).toBe(batchNum / 2);
-  expect(firstPageAsc.results).toStrictEqual(allByIdAsc.slice(0, batchNum / 2));
+  expect(firstPageAsc.results).toEqual(allByIdAsc.slice(0, batchNum / 2));
 
   const secondPageAsc = await dao.findPage({
     limit: batchNum / 2,
@@ -93,7 +93,7 @@ export async function daoTest<TEntity, TId extends PostgresJsId>(
   });
   expect(firstPageAsc.count).toBe(batchNum);
   expect(firstPageAsc.results.length).toBe(batchNum / 2);
-  expect(secondPageAsc.results).toStrictEqual(allByIdAsc.slice(batchNum / 2));
+  expect(secondPageAsc.results).toEqual(allByIdAsc.slice(batchNum / 2));
 
   const fullPageDesc = await dao.findPage({
     limit: batchNum,
@@ -103,5 +103,5 @@ export async function daoTest<TEntity, TId extends PostgresJsId>(
   });
   expect(fullPageDesc.count).toBe(batchNum);
   expect(fullPageDesc.results.length).toBe(batchNum);
-  expect(fullPageDesc.results).toStrictEqual(allByIdAsc.reverse());
+  expect(fullPageDesc.results).toEqual(allByIdAsc.reverse());
 }

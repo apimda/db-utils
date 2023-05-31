@@ -1,16 +1,16 @@
-import { Row, Sql } from 'postgres';
+import { PendingQuery, Row, Sql } from 'postgres';
 import { PostgresJsDaoMapping } from './dao.js';
 
 export type DbType = string | number | boolean | object | null;
 
 export interface PropertyMapper<TVal> {
-  extractFromRow(row: Record<string, DbType>): TVal;
-  applyToRow(row: Record<string, DbType>, value: TVal, sql: Sql): void;
+  extractFromRow: (row: Record<string, DbType>) => TVal;
+  applyToRow: (row: Record<string, DbType>, value: TVal, sql: Sql) => void;
 }
 
 export interface SimplePropertyMapper<TVal> {
   fromDb: (rowVal: DbType) => TVal;
-  toDb: (value: TVal, sql: Sql) => DbType;
+  toDb: (value: TVal, sql: Sql) => DbType | PendingQuery<any>;
 }
 
 export interface ColumnAutoMapper {
