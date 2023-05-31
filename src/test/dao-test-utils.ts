@@ -1,5 +1,6 @@
-import { BasePostgresJsDao, PostgresJsId, sortByProperty } from '@apimda/db-utils-core';
 import { expect } from 'vitest';
+import { BasePostgresJsDao, PostgresJsId } from '../dao.js';
+import { sortByProperty } from '../utils.js';
 
 export async function daoTest<TEntity, TId extends PostgresJsId>(
   dao: BasePostgresJsDao<TEntity, TId>,

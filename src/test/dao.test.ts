@@ -1,7 +1,8 @@
-import { BasePostgresJsDao, mapperDefaults } from '@apimda/db-utils-core';
 import { Sql } from 'postgres';
 import { afterAll, beforeAll, beforeEach, describe, test } from 'vitest';
-import { DbType, auto, createdAt, id, mapping, updatedAt } from '../../core/src/mapping.js';
+import { BasePostgresJsDao } from '../dao.js';
+import { DbType, auto, createdAt, id, mapping, updatedAt } from '../mapping.js';
+import { mapperDefaults } from '../utils.js';
 import { daoTest } from './dao-test-utils.js';
 import { DbTestContext } from './db-test-context.js';
 
