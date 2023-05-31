@@ -2,7 +2,6 @@
 import { randomUUID } from 'node:crypto';
 import postgres, { Sql } from 'postgres';
 import { GenericContainer, StartedTestContainer } from 'testcontainers';
-import { SchemaManager } from '../schema-manager.js';
 
 export interface DbStartResult {
   url: string;
@@ -33,11 +32,8 @@ export class DbTestContext {
   public readonly sql: Sql;
   public readonly testSchemaName: string;
 
-  public static async createGlobal(
-    schemaManager: SchemaManager,
-    startContainer = DbTestContext.DEFAULT_CONTAINER_STARTER
-  ) {
-    const result = await DbTestContext.create(schemaManager, startContainer);
+  public static async createGlobal(startContainer = DbTestContext.DEFAULT_CONTAINER_STARTER) {
+    const result = await DbTestContext.create(startContainer);
     process.env[DbTestContext.DB_URL_ENV_KEY] = result.connectionUrl;
     (globalThis as any)[DbTestContext.GLOBAL_KEY] = result;
   }
@@ -52,22 +48,16 @@ export class DbTestContext {
    * @param startContainer function to create/start the DB container
    * @returns test context instance
    */
-  static async create(schemaManager: SchemaManager, startContainer = DbTestContext.DEFAULT_CONTAINER_STARTER) {
+  static async create(startContainer = DbTestContext.DEFAULT_CONTAINER_STARTER) {
     const urlEnv = process.env[DbTestContext.DB_URL_ENV_KEY];
     if (urlEnv) {
-      return new DbTestContext(schemaManager, urlEnv);
+      return new DbTestContext(urlEnv);
     }
     const { container, url } = await startContainer();
-    const result = new DbTestContext(schemaManager, url, container);
-    await result.init();
-    return result;
+    return new DbTestContext(url, container);
   }
 
-  private constructor(
-    public readonly schemaManager: SchemaManager,
-    public readonly connectionUrl: string,
-    private readonly container?: StartedTestContainer
-  ) {
+  private constructor(public readonly connectionUrl: string, private readonly container?: StartedTestContainer) {
     this.testSchemaName = `test_` + randomUUID().replaceAll('-', '');
     this.sql = postgres(connectionUrl, {
       connection: {
@@ -77,31 +67,10 @@ export class DbTestContext {
     });
   }
 
-  private async init() {
-    await this.schemaManager.initializeDatabase(this.sql);
-  }
-
-  private async createTestSchema() {
-    await this.schemaManager.createSchema(this.sql, this.testSchemaName);
-  }
-
-  private async dropTestSchema() {
-    await this.schemaManager.dropSchema(this.sql, this.testSchemaName);
-  }
-
-  /**
-   * Recreate the entire schema, e.g. in beforeEach()
-   */
-  async recreateTestSchema() {
-    await this.dropTestSchema();
-    await this.createTestSchema();
-  }
-
   /**
    * Destroy the context, e.g. in afterAll()
    */
   async destroy() {
-    await this.schemaManager.dropSchema(this.sql, this.testSchemaName);
     await this.sql.end();
     await this.container?.stop();
   }
