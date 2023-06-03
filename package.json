@@ -1,7 +1,17 @@
 {
   "name": "@apimda/db-utils",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./test": {
+      "types": "./dist/test/index.d.ts",
+      "default": "./dist/test/index.js"
+    }
+  },
   "main": "dist/index.js",
   "files": [
     "/dist",
@@ -23,9 +33,13 @@
     "postgres": "^3.3.4"
   },
   "peerDependencies": {
+    "testcontainers": "^9.8.0",
     "zod": "^3.21.4"
   },
   "peerDependenciesMeta": {
+    "testcontainers": {
+      "optional": true
+    },
     "zod": {
       "optional": true
     }
@@ -42,7 +56,6 @@
     "prettier": "^2.8.8",
     "prettier-package-json": "^2.8.0",
     "prettier-plugin-organize-imports": "^3.2.2",
-    "testcontainers": "^9.8.0",
     "typescript": "^5.0.4",
     "vitest": "^0.31.0"
   },
