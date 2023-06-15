@@ -44,7 +44,7 @@ export type ColumnMarker = typeof id | typeof createdAt | typeof updatedAt;
 export type SimpleColumnDef = typeof auto | ColumnMarker | string | [string, ColumnMarker];
 
 export type MappedColumnDef<T> = {
-  column: string | SqlColumn;
+  column: typeof auto | string | SqlColumn;
   marker?: ColumnMarker;
   mapper: SimplePropertyMapper<T>;
 };
@@ -80,8 +80,12 @@ export function mapping<T>(tableName: string, defaults: MapperDefaults, mappingD
     return new SimpleColumnMapping(new Column(columnName, marker), propName, defaults.properties);
   }
 
-  function fromMappedDef(def: MappedColumnDef<any>, propName: string) {
-    return new SimpleColumnMapping(new Column(def.column, def.marker), propName, def.mapper);
+  function fromMappedDef(def: MappedColumnDef<any>, componentPath: string[], propName: string) {
+    const col =
+      def.column === auto
+        ? defaults.columns.buildPrefix(componentPath) + defaults.columns.propertyNameToColumnName(propName!)
+        : def.column;
+    return new SimpleColumnMapping(new Column(col, def.marker), propName, def.mapper);
   }
 
   function fromMultiMappedDef(def: MultiMappedColumnDef<any>, propName: string) {
@@ -100,7 +104,7 @@ export function mapping<T>(tableName: string, defaults: MapperDefaults, mappingD
     ) {
       return fromSimpleDef(def as SimpleColumnDef, componentPath, propName!);
     } else if ('column' in def) {
-      return fromMappedDef(def as MappedColumnDef<any>, propName!);
+      return fromMappedDef(def as MappedColumnDef<any>, componentPath, propName!);
     } else if ('columns' in def) {
       return fromMultiMappedDef(def as MultiMappedColumnDef<any>, propName!);
     } else {

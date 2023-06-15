@@ -24,6 +24,7 @@ class TestSchemaManager implements SchemaManager {
       money_amount        bigint                                    NOT NULL,
       money_currency      text                                      NOT NULL, 
       sql_test            text,
+      mapped_auto         bigint                                    NOT NULL,
       created             timestamptz   DEFAULT NOW()               NOT NULL,
       updated             timestamptz   DEFAULT NOW()               NOT NULL,
 
@@ -49,6 +50,7 @@ interface TestObj {
   };
   money: Money;
   sqlTest?: string;
+  mappedAuto: bigint;
   created?: Date;
   updated?: Date;
 }
@@ -77,6 +79,13 @@ const testMapping = mapping<TestObj>('test_obj', mapperDefaults, {
     mapper: {
       fromDb: rowVal => (rowVal ? (rowVal as string) : undefined),
       toDb: (value, sql) => (value ? sql`LOWER(${value})` : null)
+    }
+  },
+  mappedAuto: {
+    column: auto,
+    mapper: {
+      fromDb: rowVal => BigInt(rowVal as string),
+      toDb: value => value.toString()
     }
   },
   created: createdAt,
@@ -118,9 +127,10 @@ describe(' DAO Tests', () => {
         objName: 'some name',
         isAdmin: true,
         myComp: { nestedOne: 1, nestedTwo: 2 },
-        money: new Money(9007199254740991n, 'USD')
+        money: new Money(9007199254740991n, 'USD'),
+        mappedAuto: 100n
       }),
-      entity => ({ ...entity, objName: 'new name', isAdmin: false, sqlTest: 'ALL UPPER CASE' })
+      entity => ({ ...entity, objName: 'new name', isAdmin: false, sqlTest: 'ALL UPPER CASE', mappedAuto: 200n })
     );
   });
 });
