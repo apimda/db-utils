@@ -1,26 +1,19 @@
-# misc
 .DS_Store
-.gitignore
 .husky
 .npmrc
-.nvmrc
+node_modules
+/build
+/package
+/dist
+.env
+.env.*
+.gitignore
+!.env.example
+vite.config.js*
+*.sql
 
-# ide
-.idea/
-.vscode/
-
-# dependencies
-node_modules/
-
-# build
-tsconfig.tsbuildinfo
-lib/
-dist/
-
-# cdk
-cdk.outputs.json
-cdk.out/
-
-# pnpm
+# Ignore files for PNPM, NPM and YARN
 pnpm-lock.yaml
 pnpm-workspace.yaml
+package-lock.json
+yarn.lock

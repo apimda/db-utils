@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * A request for a page of results
  */
@@ -155,7 +156,10 @@ export const bigintIdToString = (id: PostgresJsId) => (typeof id === 'bigint' ? 
 
 export abstract class BasePostgresJsDao<T, ID extends PostgresJsId> implements Dao<T, ID> {
   protected readonly selectList: PendingQuery<any>;
-  constructor(protected sql: Sql, public mapping: PostgresJsDaoMapping<T>) {
+  constructor(
+    protected sql: Sql,
+    public mapping: PostgresJsDaoMapping<T>,
+  ) {
     this.selectList = sql.unsafe(this.mapping.selectColumns.join(','));
   }
 
@@ -170,7 +174,7 @@ export abstract class BasePostgresJsDao<T, ID extends PostgresJsId> implements D
   }
 
   protected results(rows: RowList<Row[]>) {
-    return rows.map(r => this.mapping.fromRow(r));
+    return rows.map((r) => this.mapping.fromRow(r));
   }
 
   protected singleResult(rows: RowList<Row[]>) {
@@ -254,7 +258,7 @@ export abstract class BasePostgresJsDao<T, ID extends PostgresJsId> implements D
     const count = await this.count(sql);
     return {
       results,
-      count
+      count,
     };
   }
 
@@ -271,7 +275,7 @@ export abstract class BasePostgresJsDao<T, ID extends PostgresJsId> implements D
     if (objs.length === 0) {
       return [];
     }
-    const rows = objs.map(obj => this.mapping.toRow(obj, sql));
+    const rows = objs.map((obj) => this.mapping.toRow(obj, sql));
     const result = await sql`
       INSERT INTO ${sql(this.mapping.tableName)} ${sql(rows)}
       RETURNING ${this.selectList}

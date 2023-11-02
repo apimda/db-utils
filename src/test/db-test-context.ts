@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { randomUUID } from 'node:crypto';
 import postgres, { Sql } from 'postgres';
@@ -25,7 +26,7 @@ export class DbTestContext {
     const url = `postgres://postgres:${pass}@localhost:${port}/postgres`;
     return {
       url,
-      container
+      container,
     };
   };
 
@@ -57,13 +58,16 @@ export class DbTestContext {
     return new DbTestContext(url, container);
   }
 
-  private constructor(public readonly connectionUrl: string, private readonly container?: StartedTestContainer) {
+  private constructor(
+    public readonly connectionUrl: string,
+    private readonly container?: StartedTestContainer,
+  ) {
     this.testSchemaName = `test_` + randomUUID().replaceAll('-', '');
     this.sql = postgres(connectionUrl, {
       connection: {
-        search_path: `${this.testSchemaName},public`
+        search_path: `${this.testSchemaName},public`,
       },
-      onnotice: () => {} // turn off notice logging - it would otherwise log schema messages that are okay
+      onnotice: () => {}, // turn off notice logging - it would otherwise log schema messages that are okay
     });
   }
 

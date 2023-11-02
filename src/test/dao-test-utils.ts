@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import assert from 'node:assert/strict';
 import { BasePostgresJsDao, PostgresJsId } from '../dao.js';
 import { sortByProperty } from '../utils.js';
@@ -13,7 +14,7 @@ const assertEqualIgnoreUndefined = (one: any, two: any) => {
 export async function daoTest<TEntity, TId extends PostgresJsId>(
   dao: BasePostgresJsDao<TEntity, TId>,
   createFn: () => TEntity,
-  updateFn: (entity: TEntity) => TEntity
+  updateFn: (entity: TEntity) => TEntity,
 ) {
   const idProp = dao.mapping.idProperty;
   const createdProp = dao.mapping.createdAtProperty;
@@ -23,7 +24,7 @@ export async function daoTest<TEntity, TId extends PostgresJsId>(
     ...src,
     ...(createdProp && { [createdProp]: upd[createdProp] }),
     ...(updatedProp && { [updatedProp]: upd[updatedProp] }),
-    [idProp]: upd[idProp]
+    [idProp]: upd[idProp],
   });
 
   // CRUD
@@ -74,7 +75,7 @@ export async function daoTest<TEntity, TId extends PostgresJsId>(
     assertEqualIgnoreUndefined(insertedArr[idx], obj);
   }
 
-  const idArr = foundAllArr.slice(batchNum / 2).map(e => e[idProp] as TId);
+  const idArr = foundAllArr.slice(batchNum / 2).map((e) => e[idProp] as TId);
   const findManyByIdArr = await dao.findManyById(idArr);
   assert.strictEqual(idArr.length, findManyByIdArr.length);
   for (const [idx, obj] of findManyByIdArr.entries()) {
@@ -87,7 +88,7 @@ export async function daoTest<TEntity, TId extends PostgresJsId>(
     limit: batchNum / 2,
     offset: 0,
     sortColumn: dao.mapping.idColumnName,
-    sortOrder: 'asc'
+    sortOrder: 'asc',
   });
   assert.strictEqual(firstPageAsc.count, batchNum);
   assert.strictEqual(firstPageAsc.results.length, batchNum / 2);
@@ -97,7 +98,7 @@ export async function daoTest<TEntity, TId extends PostgresJsId>(
     limit: batchNum / 2,
     offset: batchNum / 2,
     sortColumn: dao.mapping.idColumnName,
-    sortOrder: 'asc'
+    sortOrder: 'asc',
   });
   assert.strictEqual(firstPageAsc.count, batchNum);
   assert.strictEqual(firstPageAsc.results.length, batchNum / 2);
@@ -107,7 +108,7 @@ export async function daoTest<TEntity, TId extends PostgresJsId>(
     limit: batchNum,
     offset: 0,
     sortColumn: dao.mapping.idColumnName,
-    sortOrder: 'desc'
+    sortOrder: 'desc',
   });
   assert.strictEqual(fullPageDesc.count, batchNum);
   assert.strictEqual(fullPageDesc.results.length, batchNum);

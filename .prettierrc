@@ -3,7 +3,15 @@
   "semi": true,
   "singleQuote": true,
   "printWidth": 120,
-  "arrowParens": "avoid",
-  "plugins": ["prettier-plugin-organize-imports"],
-  "trailingComma": "none"
+  "arrowParens": "always",
+  "plugins": [],
+  "trailingComma": "all",
+  "overrides": [
+    {
+      "files": ["**/*.js", "**/*.ts"],
+      "options": {
+        "plugins": ["prettier-plugin-organize-imports"]
+      }
+    }
+  ]
 }

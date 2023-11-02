@@ -1,7 +1,7 @@
 import { Sql } from 'postgres';
 import { afterAll, beforeAll, beforeEach, describe, test } from 'vitest';
 import { BasePostgresJsDao } from '../dao.js';
-import { DbType, auto, createdAt, id, mapping, updatedAt } from '../mapping.js';
+import { auto, createdAt, id, mapping, updatedAt } from '../mapping.js';
 import { SchemaManager } from '../schema-manager.js';
 import { mapperDefaults } from '../utils.js';
 import { daoTest } from './dao-test-utils.js';
@@ -37,7 +37,10 @@ class TestSchemaManager implements SchemaManager {
 }
 
 class Money {
-  constructor(public amount: bigint, public currency: string) {}
+  constructor(
+    public amount: bigint,
+    public currency: string,
+  ) {}
 }
 
 interface TestObj {
@@ -63,33 +66,33 @@ const testMapping = mapping<TestObj>('test_obj', mapperDefaults, {
   money: {
     columns: ['money_amount', 'money_currency'],
     mapper: {
-      extractFromRow: (row: Record<string, DbType>) => {
+      extractFromRow: (row) => {
         const amount = BigInt(row['money_amount'] as string);
         const currency = row['money_currency'] as string;
         return new Money(amount, currency);
       },
-      applyToRow: (row: Record<string, DbType>, value: Money) => {
+      applyToRow: (row, value) => {
         row['money_amount'] = value.amount.toString();
         row['money_currency'] = value.currency;
-      }
-    }
+      },
+    },
   },
   sqlTest: {
     column: { sql: 'UPPER(sql_test)', name: 'sql_test' },
     mapper: {
-      fromDb: rowVal => (rowVal ? (rowVal as string) : undefined),
-      toDb: (value, sql) => (value ? sql`LOWER(${value})` : null)
-    }
+      fromDb: (rowVal) => (rowVal ? (rowVal as string) : undefined),
+      toDb: (value, sql) => (value ? sql`LOWER(${value})` : null),
+    },
   },
   mappedAuto: {
     column: auto,
     mapper: {
-      fromDb: rowVal => BigInt(rowVal as string),
-      toDb: value => value.toString()
-    }
+      fromDb: (rowVal) => BigInt(rowVal as string),
+      toDb: (value) => value.toString(),
+    },
   },
   created: createdAt,
-  updated: updatedAt
+  updated: updatedAt,
 });
 
 class TestObjDao extends BasePostgresJsDao<TestObj, string> {
@@ -128,9 +131,9 @@ describe(' DAO Tests', () => {
         isAdmin: true,
         myComp: { nestedOne: 1, nestedTwo: 2 },
         money: new Money(9007199254740991n, 'USD'),
-        mappedAuto: 100n
+        mappedAuto: 100n,
       }),
-      entity => ({ ...entity, objName: 'new name', isAdmin: false, sqlTest: 'ALL UPPER CASE', mappedAuto: 200n })
+      (entity) => ({ ...entity, objName: 'new name', isAdmin: false, sqlTest: 'ALL UPPER CASE', mappedAuto: 200n }),
     );
   });
 });

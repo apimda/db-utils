@@ -18,18 +18,18 @@ export const mapperDefaults: MapperDefaults = {
   columns: {
     buildPrefix: (componentPath: string[]) =>
       componentPath.length ? `${componentPath.map(camelToSnake).join('_')}_` : '',
-    propertyNameToColumnName: propName => camelToSnake(propName)
+    propertyNameToColumnName: (propName) => camelToSnake(propName),
   },
   properties: {
-    fromDb: rowVal => {
+    fromDb: (rowVal) => {
       return rowVal ?? undefined;
     },
-    toDb: value => {
+    toDb: (value) => {
       return value ?? null;
-    }
+    },
   },
   generation: {
     generateTimestamps: true,
-    idGenerator: randomUUID
-  }
+    idGenerator: randomUUID,
+  },
 };

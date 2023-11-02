@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PendingQuery, Row, Sql } from 'postgres';
 import { PostgresJsDaoMapping } from './dao.js';
 
@@ -89,7 +90,7 @@ export function mapping<T>(tableName: string, defaults: MapperDefaults, mappingD
   }
 
   function fromMultiMappedDef(def: MultiMappedColumnDef<any>, propName: string) {
-    const columns = def.columns.map(c => new Column(c));
+    const columns = def.columns.map((c) => new Column(c));
     return new ColumnMapping(columns, propName, def.mapper);
   }
 
@@ -131,7 +132,10 @@ export class Column {
   public selectExpr: string;
   public name: string;
 
-  constructor(public source: string | SqlColumn, public marker?: ColumnMarker) {
+  constructor(
+    public source: string | SqlColumn,
+    public marker?: ColumnMarker,
+  ) {
     if (typeof source === 'string') {
       this.selectExpr = source;
       this.name = source;
@@ -143,7 +147,11 @@ export class Column {
 }
 
 class SimpleColumnMapping<T> implements MappingSupport<T> {
-  constructor(public column: Column, public propertyName: string, private readonly mapper: SimplePropertyMapper<T>) {}
+  constructor(
+    public column: Column,
+    public propertyName: string,
+    private readonly mapper: SimplePropertyMapper<T>,
+  ) {}
 
   get columns() {
     return [this.column];
@@ -164,7 +172,7 @@ class ColumnMapping<T> implements MappingSupport<T> {
     public columns: Column[],
     public propertyName: string,
     private readonly mappingFunctions: PropertyMapper<T>,
-    public marker?: ColumnMarker
+    public marker?: ColumnMarker,
   ) {}
 
   extractFromRow(row: Row): T {
@@ -239,7 +247,7 @@ class Mapping<TObj> implements PostgresJsDaoMapping<TObj> {
   constructor(
     public tableName: string,
     public mapping: ComponentMapping<TObj>,
-    public assignmentConfig: GenerationConfig
+    public assignmentConfig: GenerationConfig,
   ) {
     const idColumn = mapping.findMarkedColumn(id);
     if (!idColumn) {
@@ -267,7 +275,7 @@ class Mapping<TObj> implements PostgresJsDaoMapping<TObj> {
   }
 
   get selectColumns() {
-    return this.mapping.columns.map(c => c.selectExpr);
+    return this.mapping.columns.map((c) => c.selectExpr);
   }
 
   fromRow(row: Row): TObj {
